@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>❤ February Spark Fest</title>
+<meta name="description" content="February Spark Fest — a creative matching game using ICD‑10‑CM Y93 activity themes. Education & fun only." />
+<style>
+:root{ --bg:#fff9fc; --card:#ffffff; --ink:#2b2b2b; --muted:#555; --accent:#9c27b0; --accent-2:#ff6ea9; --good:#2e7d32; --bad:#c62828; --shadow:0 8px 20px rgba(0,0,0,.08)}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif}
+.app-header{padding:2rem 1rem 1rem;text-align:center;position:relative}
+.app-header h1{margin:0 0 .25rem;font-weight:800}
+.tagline{margin:.25rem auto 0;max-width:64ch;color:var(--muted)}
+.disclaimer{margin:.5rem auto 0;max-width:70ch;color:#7a1b1b;background:#ffeaea;border:1px solid #ffc7c7;padding:.5rem .75rem;border-radius:.5rem}
+.music-ctl{position:absolute;right:1rem;top:1rem;display:flex;gap:.5rem;align-items:center}
+.music-ctl button{appearance:none;border:1px solid #ccc;background:#fff;padding:.35rem .6rem;border-radius:.6rem;cursor:pointer;box-shadow:var(--shadow)}
+.container{max-width:1100px;margin:0 auto;padding:0 1rem 3rem}
+.controls{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;justify-content:center;margin:1rem 0}
+.btn, select{appearance:none;border:1px solid #ccc;background:#fff;color:var(--ink);padding:.5rem .9rem;border-radius:.6rem;cursor:pointer;box-shadow:var(--shadow);transition:.15s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border:none}
+.toggle{display:flex;align-items:center;gap:.5rem;color:var(--muted)}
+.scoreboard{display:flex;gap:1.25rem;justify-content:center;margin:0 0 1rem;color:var(--muted);flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:.35rem;background:#f2f2ff;border:1px solid #dadaff;border-radius:.75rem;padding:.2rem .5rem;color:#444}
+.star{color:#f39c12}
+.mode-pill{background:#ffe9ff;border:1px solid #f0ccff}
+.game{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;align-items:start}
+.column h2{margin:.25rem 0 .5rem}
+.cards,.targets{display:grid;grid-template-columns:1fr;gap:.75rem}
+.card,.target{background:var(--card);border:1px solid #eee;border-radius:.75rem;padding:.9rem;box-shadow:var(--shadow)}
+.card{cursor:grab;position:relative;transition:.2s ease}
+.card .code{font-weight:800;color:var(--accent)}
+.card .title{font-weight:600}
+.card .desc{color:var(--muted)}
+.card .peek{position:absolute;right:.6rem;top:.6rem;font-size:.8rem;color:var(--accent);cursor:pointer}
+.card.hidden .desc{filter:blur(6px)}
+.card.hidden .title{filter:blur(6px)}
+.card.hidden .desc::after{content:' (peek to view)';color:#a06ea3}
+.card.compact{padding:.65rem .75rem}
+.card.compact .title,.card.compact .desc{display:none}
+.card.compact .code{font-size:1.05rem}
+.card.expertRing{box-shadow:0 0 0 3px rgba(156,39,176,.25), var(--shadow)}
+.target{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.target .label{font-weight:600}
+.target .dropzone{flex:1;min-height:44px;border:2px dashed #ddd;border-radius:.5rem;display:flex;align-items:center;justify-content:center;color:#aaa}
+.target.correct{border:2px solid rgba(46,125,50,.3);background:#f0fff3}
+.target.wrong{border:2px solid rgba(198,40,40,.3);background:#fff0f0}
+.card.correct{border:2px solid rgba(46,125,50,.3);background:#f0fff3}
+.card.locked{opacity:.7;cursor:default}
+.howto{margin-top:1.5rem;color:var(--muted)}
+.details{max-width:980px;margin:0 auto;background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:var(--shadow);padding:1rem}
+.details summary{cursor:pointer;font-weight:700}
+.details ul{margin:.5rem 0 0}
+.app-footer{padding:2rem 1rem;text-align:center;color:var(--muted)}
+kbd{background:#eee;border:1px solid #ddd;border-bottom-color:#bbb;border-radius:4px;padding:0 .35rem;box-shadow:inset 0 -1px 0 #bbb}
+@media (min-width:720px){.cards{grid-template-columns:1fr 1fr}.targets{grid-template-columns:1fr}}
+@media (max-width:720px){.game{grid-template-columns:1fr}}
+/* Splash */
+.splash{position:fixed;inset:0;background:linear-gradient(135deg,#faf0ff,#ffe6f3);display:flex;align-items:center;justify-content:center;z-index:20}
+.splash .panel{background:#fff;border:1px solid #eee;border-radius:1rem;box-shadow:var(--shadow);padding:1.25rem;max-width:820px;margin:1rem}
+.splash h2{margin:.2rem 0 .75rem}
+.splash .grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.splash .opt{background:#fff7ff;border:1px solid #f0d8ff;border-radius:.75rem;padding:.75rem}
+.splash .opt label{display:flex;align-items:center;gap:.5rem}
+.splash .start{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;margin-top:1rem}
+.splash .how{background:#f8fff6;border:1px solid #def5d9;border-radius:.75rem;padding:.75rem}
+.splash .how ol{margin:.5rem 0 0;padding-left:1.25rem}
+.splash .how li{margin:.35rem 0}
+/* Confetti canvas */
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:19}
+/* Toast */
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#333;color:#fff;padding:.5rem .9rem;border-radius:.6rem;opacity:0;pointer-events:none;transition:.2s ease;z-index:30}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+  <div class="toast" id="toast">Mode applied</div>
+  <canvas id="confetti"></canvas>
+  <div class="splash" id="splash" style="display:block">
+    <div class="panel">
+      <h2>❤ February Spark Fest</h2>
+      <p>Celebrate creativity this February! Match each <strong>ICD‑10‑CM Y93 activity</strong> code to its Creative Spark. These are real <em>external cause</em> activity codes — education & fun only (not medical advice or billing guidance).</p>
+      <div class="grid">
+        <div class="opt">
+          <h3>🎛️ Pick Difficulty</h3>
+          <label><input type="radio" name="mode" value="normal" checked> <strong>Normal</strong> — cards fully visible</label>
+          <label><input type="radio" name="mode" value="hard"> <strong>Hard</strong> — cards blurred (click 👁️ to peek)</label>
+          <label><input type="radio" name="mode" value="expert"> <strong>Expert</strong> — code‑only cards until peek</label>
+        </div>
+        <div class="opt">
+          <h3>🎵 Sound</h3>
+          <label><input type="checkbox" id="musicToggle" checked> Background music</label>
+          <label><input type="checkbox" id="sfxToggle" checked> Sound effects</label>
+        </div>
+      </div>
+      <div class="how" aria-label="How to select and change difficulty">
+        <h3>🧠 Quick How‑To</h3>
+        <ol>
+          <li><strong>Select</strong> your difficulty above, then click <strong>Start</strong>.</li>
+          <li>During the game, change anytime:
+            <ul>
+              <li><strong>Quick</strong>: Use the <em>Difficulty</em> dropdown → <strong>Apply & Restart</strong>.</li>
+              <li><strong>Guided</strong>: Click <strong>🎛️ Change Difficulty</strong> to reopen this screen.</li>
+            </ul>
+          </li>
+          <li>Look for the <strong>Mode</strong> badge and a small toast — they confirm your selection.</li>
+        </ol>
+      </div>
+      <div class="start">
+        <button class="btn primary" id="startBtn">🚀 Start</button>
+        <span class="badge"><span class="star">★</span> Tip: Drag a card onto a target, or tap a card then tap a target.</span>
+      </div>
+    </div>
+  </div>
+
+  <header class="app-header" role="banner">
+    <h1>❤ February Spark Fest</h1>
+    <div class="music-ctl">
+      <button id="bgmBtn" title="Toggle music">🎵 On</button>
+      <button id="muteSfxBtn" title="Toggle SFX">🔊 SFX</button>
+    </div>
+    <p class="tagline">Celebrate creativity all month. Match each <strong>Y93 activity</strong> code with its Creative Spark. ✨</p>
+    <p class="disclaimer" role="note">Uses <strong>real ICD‑10‑CM external cause activity codes (Y93.*)</strong>. For education & fun only — not medical advice or billing guidance.</p>
+  </header>
+
+  <main id="app" class="container" role="main">
+    <section class="controls" aria-label="Game controls">
+      <span class="badge mode-pill">Mode: <strong id="modeIndicator">Normal</strong></span>
+      <select id="modeSelect" aria-label="Quick difficulty">
+        <option value="normal">Normal</option>
+        <option value="hard">Hard</option>
+        <option value="expert">Expert</option>
+      </select>
+      <button id="applyModeBtn" class="btn">✅ Apply & Restart</button>
+      <button id="newGameBtn" class="btn primary">🔄 New Game</button>
+      <button id="changeLevelBtn" class="btn">🎛️ Change Difficulty</button>
+      <button id="showAnswersBtn" class="btn">👀 Reveal Answers</button>
+      <button id="resetBtn" class="btn">♻️ Reset Board</button>
+      <label class="toggle"><input type="checkbox" id="assistToggle" /><span>Hints on wrong match</span></label>
+    </section>
+
+    <details class="details">
+      <summary>ℹ️ Game tips</summary>
+      <ul>
+        <li>Normal: cards fully readable. Hard: blurred cards. Expert: code‑only cards until peek.</li>
+        <li>Score: +100 correct; Hard +10%; Expert +20%. Penalties: −20 Hard / −30 Expert per wrong.</li>
+        <li>Peeks: ∞ Normal, 6 Hard, 3 Expert.</li>
+      </ul>
+    </details>
+
+    <section class="scoreboard" aria-live="polite">
+      <div><strong>Matched:</strong> <span id="matchedCount">0</span>/10</div>
+      <div><strong>Attempts:</strong> <span id="attemptsCount">0</span></div>
+      <div><strong>Score:</strong> <span id="score">0</span></div>
+      <div><strong>Peeks:</strong> <span id="peeksLeft">∞</span></div>
+      <div><strong>Timer:</strong> <span id="timer">00:00</span></div>
+    </section>
+
+    <section class="game" aria-label="Drag the Code cards to their matching Creative Sparks">
+      <div class="column">
+        <h2>🧩 Code Cards</h2>
+        <div id="cards" class="cards" role="list"></div>
+      </div>
+      <div class="column">
+        <h2>🎨 Creative Sparks</h2>
+        <div id="targets" class="targets" role="list"></div>
+      </div>
+    </section>
+
+    <section class="howto" aria-label="How to play">
+      <h3>How to Play</h3>
+      <ol>
+        <li>Drag a <strong>Code Card</strong> onto the <strong>Creative Spark</strong> (or tap → tap).</li>
+        <li>Normal: cards fully readable. Hard: blurred cards. Expert: code‑only cards until peek.</li>
+        <li>Score: +100 per correct (first try). Hard +10% bonus, Expert +20%. −20 (Hard) / −30 (Expert) per wrong.</li>
+        <li>Peeks: Unlimited (Normal), 6 (Hard), 3 (Expert).</li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="app-footer" role="contentinfo">
+    <p>© 2026 — Built for Sherry’s creativity campaign. 🥳</p>
+  </footer>
+
+<script>
+// --- Data
+const GAME_ITEMS_BASE = [
+  { id: 'Y93.D1', title: 'Activity, knitting and crocheting', desc: 'Arts & handcrafts activity category.', answer: 'Knitting or Crochet' },
+  { id: 'Y93.D2', title: 'Activity, sewing', desc: 'Arts & handcrafts activity category.', answer: 'Sewing' },
+  { id: 'Y93.D3', title: 'Activity, furniture building and finishing', desc: 'Woodworking/finishing in arts & crafts.', answer: 'Woodworking / Furniture Finishing' },
+  { id: 'Y93.D9', title: 'Activity, other involving arts and handcrafts', desc: 'Covers other arts/crafts (e.g., painting, drawing).', answer: 'Painting / Drawing' },
+  { id: 'Y93.G1', title: 'Activity, food preparation and clean up', desc: 'Kitchen prep and cleanup tasks.', answer: 'Food Prep' },
+  { id: 'Y93.G2', title: 'Activity, grilling and smoking food', desc: 'Outdoor cooking methods.', answer: 'Grilling / Smoking' },
+  { id: 'Y93.G3', title: 'Activity, cooking and baking', desc: 'Using stove/oven/microwave.', answer: 'Cooking / Baking' },
+  { id: 'Y93.41', title: 'Activity, dancing', desc: 'Dancing and rhythmic movement.', answer: 'Dancing' },
+  { id: 'Y93.42', title: 'Activity, yoga', desc: 'Yoga practice.', answer: 'Yoga' },
+  { id: 'Y93.C1', title: 'Activity, computer keyboarding', desc: 'Typing/keyboarding (can represent writing).', answer: 'Writing / Typing' }
+];
+const TARGETS_NORMAL = ['Knitting or Crochet','Sewing','Woodworking / Furniture Finishing','Painting / Drawing','Food Prep','Grilling / Smoking','Cooking / Baking','Dancing','Yoga','Writing / Typing'];
+const TARGETS_HARD = [
+  {label:'Creating textiles with yarn or thread', map:'Knitting or Crochet'},
+  {label:'Stitching fabric with needle and thread', map:'Sewing'},
+  {label:'Assembling or finishing wooden furnishings', map:'Woodworking / Furniture Finishing'},
+  {label:'Applying pigment to a surface or sketching', map:'Painting / Drawing'},
+  {label:'Preparing ingredients / cleaning up in kitchen', map:'Food Prep'},
+  {label:'Cooking food over grill or smoker outdoors', map:'Grilling / Smoking'},
+  {label:'Operating stove/oven/microwave to heat food', map:'Cooking / Baking'},
+  {label:'Free‑form rhythmic movement to music', map:'Dancing'},
+  {label:'Postures and breath‑focused practice', map:'Yoga'},
+  {label:'Using a keyboard for extended typing', map:'Writing / Typing'},
+  {label:'Caring for domestic animals', map:null},
+  {label:'Riding a bicycle', map:null},
+  {label:'Swimming or water exercise', map:null}
+];
+const TARGETS_EXPERT = [
+  {label:'Interlacing loops of fiber to fabricate cloth', map:'Knitting or Crochet'},
+  {label:'Joining textiles with stitches by hand or machine', map:'Sewing'},
+  {label:'Shaping, sanding, or varnishing wooden structures', map:'Woodworking / Furniture Finishing'},
+  {label:'Rendering imagery with pigment or graphite', map:'Painting / Drawing'},
+  {label:'Prepping mise en place and sanitizing work area', map:'Food Prep'},
+  {label:'Applying indirect heat from charcoal or pellets', map:'Grilling / Smoking'},
+  {label:'Conducting dry or moist heat for culinary dishes', map:'Cooking / Baking'},
+  {label:'Expressive movement sequences to rhythm', map:'Dancing'},
+  {label:'Asanas and breath regulation for focus', map:'Yoga'},
+  {label:'Composing text via sustained keystrokes', map:'Writing / Typing'},
+  {label:'Loom‑based weaving of fabric panels', map:null},
+  {label:'Hand quilting layers with batting', map:null},
+  {label:'Whittling small wooden figurines', map:null},
+  {label:'Char‑broiling over open flame', map:null},
+  {label:'Tempering chocolate and confectionery work', map:null},
+  {label:'Calligraphy with dip pen and ink', map:null}
+];
+
+// --- State
+let GAME_ITEMS=[], TARGETS=[]; let mode='normal';
+let shuffledItems=[], shuffledTargets=[], selectedCardId=null;
+let attempts=0, matched=0, score=0; let peeksLeft=Infinity;
+let timerInterval=null, secondsElapsed=0; let audioReady=false, musicOn=true, sfxOn=true; let acx=null;
+
+// --- DOM
+const toast=document.getElementById('toast');
+const cnv=document.getElementById('confetti'); const splash=document.getElementById('splash');
+const startBtn=document.getElementById('startBtn'); const musicToggle=document.getElementById('musicToggle'); const sfxToggle=document.getElementById('sfxToggle');
+const bgmBtn=document.getElementById('bgmBtn'); const muteSfxBtn=document.getElementById('muteSfxBtn');
+const cardsEl=document.getElementById('cards'); const targetsEl=document.getElementById('targets');
+const matchedCountEl=document.getElementById('matchedCount'); const attemptsCountEl=document.getElementById('attemptsCount'); const scoreEl=document.getElementById('score');
+const peeksEl=document.getElementById('peeksLeft'); const timerEl=document.getElementById('timer');
+const newGameBtn=document.getElementById('newGameBtn'); const changeLevelBtn=document.getElementById('changeLevelBtn'); const resetBtn=document.getElementById('resetBtn');
+const showAnswersBtn=document.getElementById('showAnswersBtn'); const assistToggle=document.getElementById('assistToggle');
+const modeSelect=document.getElementById('modeSelect'); const applyModeBtn=document.getElementById('applyModeBtn'); const modeIndicator=document.getElementById('modeIndicator');
+
+// --- Helpers
+function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 1400); }
+
+// --- Audio (WebAudio tiny toolkit)
+function initAudio(){ try{ acx=new (window.AudioContext||window.webkitAudioContext)(); audioReady=true; }catch(e){ audioReady=false; } }
+function beep(freq=660,dur=0.12,type='sine',gain=0.03){ if(!audioReady||!sfxOn) return; const o=acx.createOscillator(); const g=acx.createGain(); o.type=type; o.frequency.value=freq; g.gain.value=gain; o.connect(g).connect(acx.destination); const now=acx.currentTime; o.start(now); o.stop(now+dur); }
+let bgmInterval=null, bgmActive=false; function startMusic(){ if(!audioReady||!musicOn||bgmActive) return; bgmActive=true; const notes=[261.63,329.63,392,523.25]; let i=0; bgmInterval=setInterval(()=>{ if(!audioReady||!musicOn){stopMusic();return;} const o=acx.createOscillator(); const g=acx.createGain(); o.type='triangle'; o.frequency.value=notes[i%notes.length]; g.gain.value=0.015; o.connect(g).connect(acx.destination); const t=acx.currentTime; o.start(t); o.stop(t+0.22); i++; },300);} function stopMusic(){ if(bgmInterval){clearInterval(bgmInterval); bgmInterval=null;} bgmActive=false; }
+
+// --- Confetti
+function launchConfetti(duration=3200,count=240){ const ctx=cnv.getContext('2d'); const dpr=window.devicePixelRatio||1; cnv.width=innerWidth*dpr; cnv.height=innerHeight*dpr; ctx.scale(dpr,dpr); const colors=['#ff6ea9','#9c27b0','#ffd166','#06d6a0','#118ab2']; const parts=[]; for(let i=0;i<count;i++){ parts.push({x:Math.random()*innerWidth,y:-20-Math.random()*innerHeight*0.2,r:4+Math.random()*5,c:colors[i%colors.length],vx:-2+Math.random()*4,vy:2+Math.random()*3,a:Math.random()*Math.PI,va:-0.2+Math.random()*0.4}); } const start=performance.now(); function frame(t){ const elapsed=t-start; ctx.clearRect(0,0,innerWidth,innerHeight); parts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.03; p.a+=p.va; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.a); ctx.fillStyle=p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r); ctx.restore(); }); if(elapsed<duration){ requestAnimationFrame(frame);} else { ctx.clearRect(0,0,innerWidth,innerHeight);} } requestAnimationFrame(frame); }
+
+// --- Utils
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a }
+function pad(n){ return n.toString().padStart(2,'0') }
+function formatTime(s){ const m=Math.floor(s/60), r=s%60; return `${pad(m)}:${pad(r)}` }
+function startTimer(){ stopTimer(); secondsElapsed=0; timerInterval=setInterval(()=>{ secondsElapsed++; timerEl.textContent=formatTime(secondsElapsed); },1000) }
+function stopTimer(){ if(timerInterval) clearInterval(timerInterval); timerInterval=null }
+function updateModeUI(){ modeIndicator.textContent = (mode==='normal'?'Normal':mode==='hard'?'Hard':'Expert'); modeSelect.value = mode; }
+
+// --- Rendering
+function render(){
+  cardsEl.innerHTML='';
+  shuffledItems.forEach(item=>{
+    const li=document.createElement('article');
+    let cls='card'; if(mode!=='normal') cls+=' hidden'; if(mode==='expert') cls+=' compact expertRing';
+    li.className=cls; li.tabIndex=0; li.setAttribute('role','listitem');
+    li.dataset.id=item.id; li.setAttribute('draggable','true');
+    li.setAttribute('aria-label', `${item.id}: ${item.title}. ${item.desc}`);
+    li.innerHTML = `<div class="code">${item.id}</div><div class="title">${item.title}</div><div class="desc">${item.desc}</div><div class="peek" title="Peek details">👁️</div>`;
+    li.querySelector('.peek').addEventListener('click',(e)=>{ e.stopPropagation(); if(peeksLeft<=0){ alert('No peeks left!'); return; } if(li.classList.contains('hidden')){ peeksLeft--; peeksEl.textContent=(peeksLeft===Infinity?'∞':String(peeksLeft)); } li.classList.toggle('hidden'); if(mode==='expert'){ li.classList.toggle('compact'); } });
+    li.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/plain', item.id); li.classList.add('dragging') });
+    li.addEventListener('dragend',()=> li.classList.remove('dragging'));
+    li.addEventListener('click',()=>{ selectedCardId=(selectedCardId===item.id?null:item.id); updateSelectedVisuals(); });
+    li.addEventListener('keydown',e=>{ if(e.key==='Enter'){ selectedCardId=(selectedCardId===item.id?null:item.id); updateSelectedVisuals(); } else if(e.key==='Escape'){ selectedCardId=null; updateSelectedVisuals(); } });
+    cardsEl.appendChild(li);
+  });
+  targetsEl.innerHTML='';
+  shuffledTargets.forEach(entry=>{ const isObj=(typeof entry==='object'); const label=isObj? entry.label : entry; const mapKey=isObj? entry.map : entry; addTarget(label,mapKey); });
+}
+function addTarget(label,mapKey){ const target=document.createElement('article'); target.className='target'; target.setAttribute('role','listitem'); const title=document.createElement('div'); title.className='label'; title.textContent=label; const drop=document.createElement('div'); drop.className='dropzone'; drop.textContent='Drop card here'; target.addEventListener('dragover',e=>{ e.preventDefault(); }); target.addEventListener('drop',e=>{ e.preventDefault(); const cardId=e.dataTransfer.getData('text/plain'); attemptMatch(cardId,mapKey,target); }); target.tabIndex=0; target.addEventListener('keydown',e=>{ if(e.key==='Enter'&&selectedCardId){ attemptMatch(selectedCardId,mapKey,target); } }); target.addEventListener('click',()=>{ if(selectedCardId){ attemptMatch(selectedCardId,mapKey,target); } }); target.appendChild(title); target.appendChild(drop); targetsEl.appendChild(target); }
+function updateSelectedVisuals(){ document.querySelectorAll('.card').forEach(c=>{ c.style.outline=(c.dataset.id===selectedCardId?'3px solid rgba(156,39,176,.5)':'none'); }); }
+function getCardElementById(cardId){ let found=null; document.querySelectorAll('.card').forEach(c=>{ if(c.dataset.id===cardId) found=c; }); return found; }
+
+// --- Game Logic
+function attemptMatch(cardId,targetLabelKey,targetEl){ const item=GAME_ITEMS.find(i=>i.id===cardId); const ok=item && targetLabelKey && (item.answer===targetLabelKey); attempts++; attemptsCountEl.textContent=String(attempts); targetEl.classList.remove('wrong','correct'); if(ok){ matched++; matchedCountEl.textContent=String(matched); let add=100; if(mode==='hard') add=Math.floor(add*1.1); if(mode==='expert') add=Math.floor(add*1.2); score+=add; scoreEl.textContent=String(score); targetEl.classList.add('correct'); const dz=targetEl.querySelector('.dropzone'); dz.innerHTML=`<strong>${item.id}</strong> — ${item.title}`; dz.style.borderColor='transparent'; dz.style.color='var(--good)'; const cardEl=getCardElementById(cardId); if(cardEl){ cardEl.classList.add('locked','correct'); cardEl.setAttribute('draggable','false'); cardEl.style.opacity='0.6'; } if(selectedCardId===cardId){ selectedCardId=null; updateSelectedVisuals(); } if(sfxOn) beep(740,0.10,'triangle',0.035); if(matched===GAME_ITEMS.length){ stopTimer(); if(sfxOn){ beep(784,0.08,'sine',0.035); setTimeout(()=>beep(880,0.08,'sine',0.035),100); setTimeout(()=>beep(988,0.12,'sine',0.035),200);} launchConfetti(3200,240); setTimeout(()=>{ alert(`You matched all ${GAME_ITEMS.length}!\nTime: ${formatTime(secondsElapsed)}\nAttempts: ${attempts}\nScore: ${score}`); },120); } } else { targetEl.classList.add('wrong'); let penalty=(mode==='expert')?30:20; score=Math.max(0,score-penalty); scoreEl.textContent=String(score); if(sfxOn) beep(220,0.15,'sawtooth',0.03); if(assistToggle.checked && item){ const correct=item.answer; document.querySelectorAll('.target .label').forEach(l=>{ const lbl=l.textContent; let key=null; if(mode==='normal'){ key=lbl; } else if(mode==='hard'){ const e=TARGETS_HARD.find(t=>t.label===lbl); key=e? e.map:null; } else { const e=TARGETS_EXPERT.find(t=>t.label===lbl); key=e? e.map:null; } if(key===correct){ const p=l.parentElement; p.classList.add('correct'); setTimeout(()=>p.classList.remove('correct'),700); } }); } } }
+
+function setMode(newMode){ mode=newMode; updateModeUI(); }
+function newGame(){ attempts=0; matched=0; score=0; selectedCardId=null; matchedCountEl.textContent='0'; attemptsCountEl.textContent='0'; scoreEl.textContent='0'; if(mode==='normal'){ peeksLeft=Infinity; } if(mode==='hard'){ peeksLeft=6; } if(mode==='expert'){ peeksLeft=3; } peeksEl.textContent=(peeksLeft===Infinity?'∞':String(peeksLeft)); startTimer(); GAME_ITEMS=shuffle(GAME_ITEMS_BASE); shuffledItems=shuffle(GAME_ITEMS); if(mode==='normal'){ TARGETS=TARGETS_NORMAL.slice(0); } if(mode==='hard'){ TARGETS=TARGETS_HARD.slice(0); } if(mode==='expert'){ TARGETS=TARGETS_EXPERT.slice(0); } shuffledTargets=shuffle(TARGETS); render(); }
+function resetBoard(){ attempts=0; matched=0; score=0; matchedCountEl.textContent='0'; attemptsCountEl.textContent='0'; scoreEl.textContent='0'; startTimer(); render(); }
+function revealAnswers(){ resetBoard(); const map={}; document.querySelectorAll('.target').forEach(t=>{ const lbl=t.querySelector('.label').textContent; let key=null; if(mode==='normal'){ key=lbl; } if(mode==='hard'){ const e=TARGETS_HARD.find(x=>x.label===lbl); key=e? e.map:null; } if(mode==='expert'){ const e=TARGETS_EXPERT.find(x=>x.label===lbl); key=e? e.map:null; } map[lbl]={el:t,key}; }); GAME_ITEMS.forEach(item=>{ const targetEl=Object.values(map).find(v=>v.key===item.answer)?.el; if(targetEl){ attemptMatch(item.id,item.answer,targetEl); } }); }
+
+// --- Splash helpers
+function openSplash(){ const radios=document.querySelectorAll('input[name="mode"]'); radios.forEach(r=>{ r.checked=(r.value===mode); }); document.getElementById('musicToggle').checked=musicOn; document.getElementById('sfxToggle').checked=sfxOn; splash.style.display='flex'; }
+
+// --- Event wiring (fixed Start button)
+startBtn.addEventListener('click', ()=>{ setMode(document.querySelector('input[name="mode"]:checked')?.value||'normal'); musicOn=!!musicToggle.checked; sfxOn=!!sfxToggle.checked; if(!audioReady){ initAudio(); } if(musicOn){ startMusic(); bgmBtn.textContent='🎵 On'; } else { stopMusic(); bgmBtn.textContent='🎵 Off'; } muteSfxBtn.textContent = sfxOn? '🔊 SFX' : '🔇 SFX'; splash.style.display='none'; newGame(); showToast('Mode applied: '+modeIndicator.textContent); });
+
+bgmBtn.addEventListener('click', ()=>{ musicOn=!musicOn; bgmBtn.textContent=musicOn?'🎵 On':'🎵 Off'; if(musicOn){ if(!audioReady) initAudio(); startMusic(); } else { stopMusic(); } });
+muteSfxBtn.addEventListener('click', ()=>{ sfxOn=!sfxOn; muteSfxBtn.textContent=sfxOn?'🔊 SFX':'🔇 SFX'; });
+
+newGameBtn.addEventListener('click', newGame);
+changeLevelBtn.addEventListener('click', ()=>{ stopTimer(); openSplash(); });
+resetBtn.addEventListener('click', resetBoard);
+showAnswersBtn.addEventListener('click', revealAnswers);
+modeSelect.addEventListener('change', (e)=>{ setMode(e.target.value); stopTimer(); newGame(); showToast('Mode applied: '+modeIndicator.textContent); });
+applyModeBtn.addEventListener('click', ()=>{ stopTimer(); newGame(); showToast('Mode applied: '+modeIndicator.textContent); });
+
+// Initialize UI
+updateModeUI();
+// Wait for Start
+</script>
+</body>
+</html>
